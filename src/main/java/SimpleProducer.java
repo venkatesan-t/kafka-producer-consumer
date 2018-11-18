@@ -3,6 +3,8 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Properties;
 
 public class SimpleProducer {
@@ -16,11 +18,19 @@ public class SimpleProducer {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 
-        Producer<String, String> producer = new KafkaProducer<String, String>(props);
+        props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "10");
 
-        ProducerRecord<String, String> record =
-                new ProducerRecord<String, String>("first-topic", "First message from code");
-        producer.send(record);
+        Producer<String, String> producer = new KafkaProducer<String, String>(props);
+        Instant start = Instant.now();
+        for(int i=0;i<10000;i++)
+        {
+            ProducerRecord<String, String> record =
+                    new ProducerRecord<String, String>("first-topic",  Integer.toString(i), "Message " + Integer.toString(i));
+            producer.send(record);
+        }
+        Instant end = Instant.now();
+        long ns = Duration.between(start, end).toNanos();
+        System.out.println(ns);
         producer.close();
     }
 }
