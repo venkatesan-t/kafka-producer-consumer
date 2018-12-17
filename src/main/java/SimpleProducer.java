@@ -22,10 +22,11 @@ public class SimpleProducer {
 
         Producer<String, String> producer = new KafkaProducer<String, String>(props);
         Instant start = Instant.now();
-        for(int i=0;i<10000;i++)
+        for(int i=0;i<2000000;i++)
         {
             ProducerRecord<String, String> record =
-                    new ProducerRecord<String, String>("first-topic",  Integer.toString(i), "Message " + Integer.toString(i));
+                    new ProducerRecord<String, String>("second-topic",  Integer.toString(i), "Message " + Integer.toString(i));
+                    //new ProducerRecord<String, String>("second-topic",  Integer.toString(i), "Message " + Integer.toString(i));
             producer.send(record);
         }
         Instant end = Instant.now();

@@ -7,10 +7,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class SimpleConsumer {
-    public static void main(String[] args) {
-
+public class MultithreadingSimpleConsumer extends Thread {
+    static AtomicInteger cnt = new AtomicInteger();
+    public void run()
+    {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "grp-1");
@@ -24,14 +26,12 @@ public class SimpleConsumer {
         consumer.subscribe(Arrays.asList("second-topic"));
         //consumer.subscribe(Arrays.asList("second-topic"));
 
-        Instant start = Instant.now();
-        int cnt = 0;
         try
         {
-            while(cnt < 2000000)
+            while(cnt.get() < 2000000)
             {
                 ConsumerRecords<String, String> recordList = consumer.poll(Duration.ofSeconds(1000));
-                cnt += recordList.count();
+                cnt.set(cnt.get() + recordList.count());
                 for(ConsumerRecord<String, String> record : recordList)
                 {
                     System.out.println("===========partition id= " + record.partition() +
@@ -42,8 +42,5 @@ public class SimpleConsumer {
         finally {
             consumer.close();
         }
-        Instant end = Instant.now();
-        long ns = Duration.between(start, end).toNanos();
-        System.out.println(ns);
     }
 }
